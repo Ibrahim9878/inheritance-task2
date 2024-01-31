@@ -1,0 +1,598 @@
+#include <vector>
+#include <iostream>
+#include <cassert>
+#include <string>
+
+using namespace std;
+
+class Engine
+{
+    int* _engine_no;
+    string* _company;
+    double* _volume;
+
+public:
+    Engine() : _engine_no(nullptr), _company(nullptr), _volume(nullptr) {}
+
+    Engine(int Engine_no, const string& Company, double volume) : Engine()
+    {
+        SetEngineNo(Engine_no);
+        SetCompany(Company);
+        SetVolume(volume);
+    }
+
+    Engine(const Engine& other) : Engine()
+    {
+        SetCompany(*(other.GetCompany()));
+        SetEngineNo(*(other.GetEngineNo()));
+        SetVolume(*(other.GetVolume()));
+    }
+
+    ~Engine()
+    {
+        delete _engine_no;
+        delete _company;
+        delete _volume;
+    }
+
+    Engine& operator=(const Engine& other)
+    {
+        SetCompany(*(other.GetCompany()));
+        SetEngineNo(*(other.GetEngineNo()));
+        SetVolume(*(other.GetVolume()));
+        return *this;
+    }
+
+    int* GetEngineNo() const { return _engine_no; }
+    const string* GetCompany() const { return _company; }
+    double* GetVolume() const { return _volume; }
+
+    void SetEngineNo(int EngineNo)
+    {
+        if (EngineNo < 2 || EngineNo > 19)
+            assert(!"Engine number is incorrect");
+
+        if (_engine_no == nullptr)
+            _engine_no = new int();
+
+        *_engine_no = EngineNo;
+    }
+
+    void SetCompany(const string& company)
+    {
+        if (company.size() < 3 || company.size() > 20)
+            assert(!"Company name is incorrect");
+
+        if (_company != nullptr)
+            delete _company;
+
+        _company = new string(company);
+    }
+
+    void SetVolume(double volume)
+    {
+        if (volume < 10 || volume > 10000)
+            assert(!"Volume is incorrect");
+
+        if (_volume == nullptr)
+            _volume = new double();
+
+        *_volume = volume;
+    }
+
+    void Print()
+    {
+        cout << "Engine NO: " << *_engine_no << endl;
+        cout << "Company: " << *_company << endl;
+        cout << "Volume: " << *_volume << endl;
+    }
+};
+
+class Base
+{
+    string* _model;
+    string* _vendor;
+    Engine* _engine;
+
+public:
+    Base() : _model(nullptr), _vendor(nullptr), _engine(nullptr) {}
+
+    Base(const string& model, const string& vendor, const Engine& engine) : Base()
+    {
+        SetModel(model);
+        SetVendor(vendor);
+        SetEngine(engine);
+    }
+
+    Base(const Base& other) : Base()
+    {
+        SetEngine(*(other.GetEngine()));
+        SetModel(*(other.GetModel()));
+        SetVendor(*other.GetVendor());
+    }
+
+    ~Base()
+    {
+        if (_model != nullptr)
+            delete _model;
+        if (_vendor != nullptr)
+            delete _vendor;
+        if (_engine != nullptr)
+            delete _engine;
+    }
+
+    Base& operator=(const Base& other)
+    {
+        SetEngine(*(other.GetEngine()));
+        SetModel(*(other.GetModel()));
+        SetVendor(*other.GetVendor());
+        return *this;
+    }
+
+    const string* GetModel() const { return _model; }
+    const string* GetVendor() const { return _vendor; }
+    const Engine* GetEngine() const { return _engine; }
+
+    void SetModel(const string& Model)
+    {
+        if (Model.size() < 3 || Model.size() > 34)
+            assert(!"Model is incorrect");
+
+        if (_model == nullptr)
+            _model = new string();
+
+        *_model = Model;
+    }
+
+    void SetVendor(const string& Vendor)
+    {
+        if (Vendor.size() < 3 || Vendor.size() > 19)
+            assert(!"Vendor size is incorrect");
+
+        if (_vendor == nullptr)
+            _vendor = new string();
+
+        *_vendor = Vendor;
+    }
+
+    void SetEngine(const Engine& engine)
+    {
+        if (_engine == nullptr)
+            _engine = new Engine();
+
+        _engine->SetCompany(*(engine.GetCompany()));
+        _engine->SetEngineNo(*(engine.GetEngineNo()));
+        _engine->SetVolume(*(engine.GetVolume()));
+    }
+
+    void Print()
+    {
+        cout << "Model: " << (*_model) << endl;
+        cout << "Vendor: " << (*_vendor) << endl;
+        _engine->Print();
+    }
+};
+
+class Car : public Base
+{
+    static int static_id;
+    bool* _HasSpoiler;
+    int id;
+
+public:
+    Car() : _HasSpoiler(nullptr), id(static_id++) {}
+
+    Car(bool HasSpoiler, const string& model, const string& vendor, const Engine& engine)
+        : Base(model, vendor, engine), _HasSpoiler(nullptr), id(static_id++)
+    {
+        SetHasSpoiler(HasSpoiler);
+    }
+
+    Car(const Car& other) : Base(other)
+    {
+        SetHasSpoiler(*other._HasSpoiler);
+        id = other.GetID();
+    }
+
+    ~Car()
+    {
+        if(_HasSpoiler!= nullptr)
+        {
+            delete _HasSpoiler;
+            _HasSpoiler = NULL;
+        }
+
+    }
+
+    Car& operator=(const Car& other)
+    {
+        Base::operator=(other);
+        SetHasSpoiler(*other.GetHasSpoiler());
+        id = other.GetID();
+        return *this;
+    }
+
+    const bool* GetHasSpoiler() const { return _HasSpoiler; }
+    int GetID() const { return id; }
+
+    void SetHasSpoiler(bool HasSpoiler)
+    {
+        if (HasSpoiler != 0 && HasSpoiler != 1)
+            assert(!"HasSpoiler is incorrect");
+
+        if (_HasSpoiler == nullptr)
+            _HasSpoiler = new bool();
+
+        _HasSpoiler = new bool(HasSpoiler);
+    }
+
+    void Print()
+    {
+        cout << "Id: " << id << endl;
+        Base::Print();
+        cout << "Spoiler Yes/No : " << *_HasSpoiler << endl;
+    }
+};
+int Car::static_id = 1;
+
+class Ship : public Base
+{
+    int _id;
+    static int static_id;
+    bool* _HasSail;
+
+public:
+    Ship()
+    {
+        _id = static_id++;
+        _HasSail = nullptr;
+    }
+
+    Ship(bool HasSail, const string& model, const string& vendor, const Engine& engine) : Base(model, vendor, engine), _HasSail(nullptr), _id(static_id++)
+    {
+        SetHasSail(HasSail);
+    }
+
+    Ship(const Ship& other) : Base(other)
+    {
+        SetHasSail(*other._HasSail);
+        _id = other._id;
+    }
+
+    ~Ship()
+    {
+        if (_HasSail != nullptr)
+        {
+            delete _HasSail;
+            _HasSail = NULL;
+        }
+    }
+
+    Ship& operator=(Ship other)
+    {
+        Base::operator=(other);
+        SetHasSail(*other.GetHasSail());
+        _id = other._id;
+        return *this;
+    }
+
+    const int GetStaticId() { return static_id; }
+    const bool* GetHasSail() { return _HasSail; }
+    int GetID() { return _id; }
+
+    void SetHasSail(bool HasSail)
+    {
+        if (_HasSail == nullptr)
+            _HasSail = new bool();
+        _HasSail = new bool(HasSail);
+    }
+
+    void Print()
+    {
+        cout << "Id: " << _id << endl;
+        Base::Print();
+        cout << "HasSail Yes/No: " << *_HasSail << endl;
+    }
+};
+int Ship::static_id = 1;
+
+class Airplane : public Base
+{
+    int* _EngineCount;
+    int* _PassangersCapacity;
+    int _id;
+    static int static_id;
+
+public:
+    Airplane()
+    {
+        _id = static_id++;
+        _EngineCount = nullptr;
+        _PassangersCapacity = nullptr;
+    }
+
+    Airplane(const string& model, const string& vendor, const Engine& engine, int EngineCount, int Capacity) : Base(model, vendor, engine), _id(static_id++)
+    {
+        SetEngineCount(EngineCount);
+        SetPassangersCapacity(Capacity);
+    }
+
+    Airplane(const Airplane& other) : Base(other)
+    {
+        SetEngineCount(*other._EngineCount);
+        SetPassangersCapacity(*other._EngineCount);
+        _id = other._id;
+    }
+
+    ~Airplane()
+    {
+        if (_EngineCount != nullptr)
+        {
+            delete _EngineCount;
+            _EngineCount = NULL;
+        }
+        if (_PassangersCapacity != nullptr)
+        {
+            delete _PassangersCapacity;
+            _PassangersCapacity = NULL;
+        }
+    }
+
+    Airplane& operator=(const Airplane& other)
+    {
+        Base::operator=(other);
+        SetEngineCount(*other._EngineCount);
+        SetPassangersCapacity(*other._PassangersCapacity);
+        _id = other._id;
+        return *this;
+    }
+
+    const int* GetEngineCount() { return _EngineCount; }
+    const int* GetPassangersCapacity() { return _PassangersCapacity; }
+    const int GetID() { return _id; }
+
+    void SetPassangersCapacity(int Capacity)
+    {
+        if (Capacity < 58 && Capacity > 500)
+            assert(!"Passengers capacity is incorrect");
+        if (_PassangersCapacity == nullptr)
+            _PassangersCapacity = new int();
+        _PassangersCapacity = new int(Capacity);
+    }
+    void SetEngineCount(int Count)
+    {
+        if (Count < 2 && Count > 16)
+            assert(!"Engine Count is incorrect");
+        if (_EngineCount == nullptr)
+            _EngineCount = new int();
+        _EngineCount = new int(Count);
+    }
+
+    void Print()
+    {
+        cout << "Id: " << _id << endl;
+        Base::Print();
+        cout << "Engine Count: " << *_EngineCount << endl;
+        cout << "Passengers Capacity: " << *_PassangersCapacity << endl;
+    }
+};
+int Airplane::static_id = 1;
+
+template <typename T>
+void DeleteByIndexVector(T*& cars, int index)
+{
+    T* NewCars = new T();
+    for (size_t i = 0; i < cars->size(); i++)
+    {
+        if (i == index) continue;
+        NewCars->push_back(cars->at(i));
+    }
+    delete cars;
+    cars = NewCars;
+}
+
+class Depo
+{
+    vector<Car>* _Cars;
+    vector<Ship>* _Ships;
+    vector<Airplane>* _Airplanes;
+
+public:
+    Depo(vector<Car>* cars, vector<Ship>* ships, vector<Airplane>* planes)
+    {
+        SetAirplane(planes);
+        SetShips(ships);
+        SetCars(cars);
+    }
+
+    vector<Car>* GetCars() { return _Cars; }
+    vector<Ship>* GetShips() { return _Ships; }
+    vector<Airplane>* GetAirplane() { return _Airplanes; }
+
+    void SetCars(vector<Car>* cars)
+    {
+        if (cars == nullptr)
+            assert(!"cars == nullptr");
+        _Cars = cars;
+    }
+    void SetShips(vector<Ship>* ships)
+    {
+        if (ships == nullptr)
+            assert(!"ships == nullptr");
+        _Ships = ships;
+    }
+    void SetAirplane(vector<Airplane>* airplane)
+    {
+        if (airplane == nullptr)
+            assert(!"airplane == nullptr");
+        _Airplanes = airplane;
+    }
+
+    void AddCar(Car car)
+    {
+        _Cars->push_back(car);
+    }
+    void AddShip(Ship ship)
+    {
+        _Ships->push_back(ship);
+    }
+    void AddAirplane(Airplane airplane)
+    {
+        _Airplanes->push_back(airplane);
+    }
+
+    void AddCarByIndex(Car car, int index)
+    {
+        if (index < 0 || index > _Cars->size())
+            assert(!"Index out of range");
+
+        _Cars->insert(_Cars->begin() + index, car);
+    }
+
+    void AddShipByIndex(Ship ship, int index)
+    {
+        if (index < 0 || index > _Ships->size())
+            assert(!"Index out of range");
+
+        _Ships->insert(_Ships->begin() + index, ship);
+    }
+
+    void AddAirplaneByIndex(Airplane airplane, int index)
+    {
+        if (index < 0 || index > _Airplanes->size())
+            assert(!"Index out of range");
+
+        _Airplanes->insert(_Airplanes->begin() + index, airplane);
+    }
+
+    void DeleteCarBack()
+    {
+        _Cars->pop_back();
+    }
+    void DeleteShipBack()
+    {
+        _Ships->pop_back();
+    }
+    void DeleteAirplaneBack()
+    {
+        _Airplanes->pop_back();
+    }
+
+    void DeleteCarByIndex(int index)
+    {
+        DeleteByIndexVector<vector<Car>>(_Cars, index);
+    }
+    void DeleteShipByIndex(int index)
+    {
+        DeleteByIndexVector<vector<Ship>>(_Ships, index);
+    }
+    void DeleteAirplaneByIndex(int index)
+    {
+        DeleteByIndexVector<vector<Airplane>>(_Airplanes, index);
+    }
+
+    void GetCarByID(int Id)
+    {
+        for (size_t i = 0; i < _Cars->size(); i++)
+        {
+            if (_Cars->at(i).GetID() == Id)
+            {
+                _Cars->at(i).Print();
+                break;
+            }
+        }
+    }
+    void GetShipByID(int Id)
+    {
+        for (size_t i = 0; i < _Ships->size(); i++)
+        {
+            if (_Ships->at(i).GetID() == Id)
+            {
+                _Ships->at(i).Print();
+                break;
+            }
+        }
+    }
+    void GetAirplaneByID(int Id)
+    {
+        for (size_t i = 0; i < _Airplanes->size(); i++)
+        {
+            if (_Airplanes->at(i).GetID() == Id)
+            {
+                _Airplanes->at(i).Print();
+                break;
+            }
+        }
+    }
+
+    void ShowAllVeichle()
+    {
+
+        cout << endl;
+        cout << endl;
+        cout << "Cars: " << endl;
+        for (size_t i = 0; i < _Cars->size(); i++)
+        {
+            _Cars->at(i).Print();
+        }
+        cout << endl;
+        cout << "Ships: " << endl;
+        for (size_t i = 0; i < _Ships->size(); i++)
+        {
+            _Ships->at(i).Print();      
+        }
+        cout << endl;
+        cout << "PLanes: " << endl;
+        for (size_t i = 0; i < _Airplanes->size(); i++)
+        {
+            _Airplanes->at(i).Print();
+        }
+    }
+};
+
+int main()
+{
+	Engine e(11, "Intel", 27);
+	Engine e2(11, "AMD", 27);
+	Engine e3(11, "RYzen", 27);
+	Car car(true, "BMW1", "AVEO", e);
+	Car car1(true, "BMW2", "AVEO", e);
+	Car car2(true, "BMW3", "AVEO", e);
+	Car car3(true, "BMW4", "AVEO", e);
+	Airplane plane1("RF-3871", "X56", e3, 12, 450);
+	Airplane plane2("RF-3871", "X56", e3, 12, 450);
+	Airplane plane3("RF-3871", "X56", e3, 12, 450);
+	Airplane plane4("RF-3871", "X56", e3, 12, 450);
+	Ship ship1(true, "viayan", "7821", e2);
+	Ship ship2(true, "viayan", "7821", e2);
+	Ship ship3(true, "viayan", "7821", e2);
+	Ship ship4(true, "viayan", "7821", e2);
+	vector<Car> cars;
+	cars.push_back(car);
+	cars.push_back(car1);
+	cars.push_back(car2);
+	cars.push_back(car3);
+	vector<Ship> ships;
+	ships.push_back(ship1);
+	ships.push_back(ship2);
+	ships.push_back(ship3);
+	ships.push_back(ship4);
+	vector<Airplane> airplanes;
+	airplanes.push_back(plane1);
+	airplanes.push_back(plane2);
+	airplanes.push_back(plane3);
+	airplanes.push_back(plane4);
+
+	Depo depo(&cars, &ships, &airplanes);
+
+    depo.ShowAllVeichle();
+
+
+
+
+	//plane.Print();
+
+	////car.Print();if
+	//ship.Print();
+
+}
